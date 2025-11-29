@@ -143,11 +143,11 @@ function b()
         cs:Fire(status.stop)
         task.wait(15)
         if tonumber(d.Text:sub(1, -4)) == 0 then
-            while not odm.Text:match("Loading in") do
+            while not odm.Text:match("Loading in") and tonumber(d.Text:sub(1, -4)) == 0 do
                 cs:fire(5)
-                task.wait(3)
+                task.wait(5)
                 cs:fire(status.stop)
-                task.wait(10)
+                task.wait(6)
             end
         end
     elseif num <= SAFESTOPDISTANCE and mode then
