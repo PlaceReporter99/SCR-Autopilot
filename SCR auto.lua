@@ -124,6 +124,7 @@ drive.Clock.TextLabel:GetPropertyChangedSignal("Text"):Connect(function()
 input.press(Enum.KeyCode.T)
 input.press(Enum.KeyCode.Q)
 if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 then
+    targetlock = false
     task.wait(10)
     if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 then
         mode = false
