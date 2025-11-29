@@ -9,7 +9,7 @@ local MAXSPEED = 100
 -- The speed the train should slow down to when getting close to the station.
 local SAFESTOPSPEED = 40
 
--- The distance in miles from the station your train should reach before stopping.
+-- The distance in miles from the station your train should reach before slowing down.
 local SAFESTOPDISTANCE = 0.35
 
 
@@ -159,4 +159,7 @@ function b()
     end
 end
 c = d:GetPropertyChangedSignal("Text"):Connect(b)
-b()
+if tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE then
+    cs:Fire(status.slow)
+else
+    cs:Fire(status.full)
