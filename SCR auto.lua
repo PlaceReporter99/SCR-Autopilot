@@ -145,7 +145,7 @@ function b()
         if tonumber(d.Text:sub(1, -4)) == 0 then
             while not odm.Text:match("Loading in") and tonumber(d.Text:sub(1, -4)) == 0 do
                 cs:fire(5)
-                task.wait(5)
+                task.wait(7)
                 cs:fire(status.stop)
                 task.wait(6)
             end
