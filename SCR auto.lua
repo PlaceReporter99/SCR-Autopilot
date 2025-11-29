@@ -1,3 +1,31 @@
+-- Made by PlaceReporter99
+-- https://github.com/PlaceReporter99
+
+-- You may want to change these constants depending on your train.
+
+-- The maximum speed of your train.
+local MAXSPEED = 100
+
+-- The speed the train should slow down to when getting close to the station.
+local SAFESTOPSPEED = 40
+
+-- The distance in miles from the station your train should reach before stopping.
+local SAFESTOPDISTANCE = 0.35
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local cs = Instance.new("BindableEvent")
 cs.Name = "ChangeSpeed"
 status = {
@@ -8,9 +36,9 @@ status = {
 local queue = {}
 cs.Event:Connect(function(a)
     if a == status.full then
-        target(100)
+        target(MAXSPEED)
     elseif a == status.slow then
-        target(40)
+        target(SAFESTOPSPEED)
     elseif a == status.stop then
         target(0)
     else
@@ -122,10 +150,10 @@ function b()
                 task.wait(10)
             end
         end
-    elseif num <= 0.35 and mode then
+    elseif num <= SAFESTOPDISTANCE and mode then
         mode = false
         cs:Fire(status.slow)
-    elseif not mode and num > 0.35 then
+    elseif not mode and num > SAFESTOPDISTANCE then
         mode = true
         cs:Fire(status.full)
     end
