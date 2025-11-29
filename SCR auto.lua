@@ -98,6 +98,7 @@ function target(speed)
     print("targeting speed", speed)
     print("rotation data this", speed_angle(speed), "that", arm.Rotation)
     if targetlock == false then
+        print("targetlock is disabled. changing speed.")
         targetlock = true
         if -0.5 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 0.5 then
             -- it's fine, do nothing 
@@ -118,6 +119,8 @@ function target(speed)
             input.stop(Enum.KeyCode.W)
         end
         targetlock = false
+    else
+        print("targetlock is enabled.")
     end
 end
 drive.Clock.TextLabel:GetPropertyChangedSignal("Text"):Connect(function()
