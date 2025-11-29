@@ -4,13 +4,13 @@
 -- You may want to change these constants depending on your train.
 
 -- The maximum speed of your train.
-local MAXSPEED = 90
+local MAXSPEED = 100
 
 -- The speed the train should slow down to when getting close to the station.
-local SAFESTOPSPEED = 30
+local SAFESTOPSPEED = 40
 
 -- The distance in miles from the station your train should reach before slowing down.
-local SAFESTOPDISTANCE = 0.3
+local SAFESTOPDISTANCE = 0.35
 
 
 
