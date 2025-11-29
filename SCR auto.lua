@@ -158,9 +158,9 @@ function b()
         cs:Fire(status.full)
     end
 end
-c = d:GetPropertyChangedSignal("Text"):Connect(b)
 if tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE then
     cs:Fire(status.slow)
 else
     cs:Fire(status.full)
 end
+c = d:GetPropertyChangedSignal("Text"):Connect(b)
