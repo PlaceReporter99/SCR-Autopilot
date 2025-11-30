@@ -33,7 +33,13 @@ status = {
     ["slow"] = 1,
     ["stop"] = 0
 }
-local queue = {}
+signalv = {
+    ["proceed"] = 0,
+    ["precaution"] = 1,
+    ["caution"] = 2,
+    ["danger"] = 3,
+    ["unknown"] = 4
+}
 cs.Event:Connect(function(a)
     if a == status.full then
         target(MAXSPEED)
@@ -88,48 +94,63 @@ local ti = left.DepartTime
 local odm = cluster.Activity.ActivityMessage
 local nl = drive.Summary.SummaryPage.Controls.NextLeg
 local aws = cluster.AwsIndicatorMinimal
+local signal = drive.Additional.DetailsStack.AdvanceContainer.Signal.Standard
 
-local targetlock = false
+function getSignal()
+    if signal.Danger.BackgroundTransparency == 0 then
+        print("signal get danger")
+        return signalv.danger
+    end
+    if signal.Precaution.BackgroundTransparency == 0 then
+        print("signal get precaution")
+        return signalv.precaution
+    end
+    if signal.Caution.BackgroundTransparency == 0 then
+        print("signal get caution")
+        return signalv.caution
+    end
+    if signal.Proceed.BackgroundTransparency == 0 then
+        print("signal get proceed")
+        return signalv.proceed
+    end
+    print("signal get unknown")
+    return signalv.unknown
+end
+
 local mode = nil
 
 speed_angle = function(speed) return speed*1.2 - 31 end
 
 function target(speed)
+    input.stop(Enum.KeyCode.W)
+    input.stop(Enum.KeyCode.S)
     print("targeting speed", speed)
     print("rotation data this", speed_angle(speed), "that", arm.Rotation)
-    if targetlock == false then
-        print("targetlock is disabled. changing speed.")
-        targetlock = true
-        if -0.5 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 0.5 then
-            -- it's fine, do nothing 
-            print("speed did not change", speed)
-        elseif speed_angle(speed) < arm.Rotation then
-            print("speed decrease to", speed)
-            input.start(Enum.KeyCode.S)
-            while speed_angle(speed) < arm.Rotation do
-                task.wait(0.005)
-            end
-            input.stop(Enum.KeyCode.S)
-        elseif speed_angle(speed) > arm.Rotation then
-            print("speed increase to", speed)
-            input.start(Enum.KeyCode.W)
-            while speed_angle(speed) > arm.Rotation do
-                task.wait(0.005)
-            end
-            input.stop(Enum.KeyCode.W)
+    if -0.5 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 0.5 then
+        -- it's fine, do nothing 
+        print("speed did not change", speed)
+    elseif speed_angle(speed) < arm.Rotation then
+        print("speed decrease to", speed)
+        input.start(Enum.KeyCode.S)
+        while speed_angle(speed) < arm.Rotation do
+            task.wait(0.005)
         end
-        targetlock = false
-    else
-        print("targetlock is enabled.")
+        input.stop(Enum.KeyCode.S)
+    elseif speed_angle(speed) > arm.Rotation then
+        print("speed increase to", speed)
+        input.start(Enum.KeyCode.W)
+        while speed_angle(speed) > arm.Rotation do
+            task.wait(0.005)
+        end
+        input.stop(Enum.KeyCode.W)
     end
 end
 drive.Clock.TextLabel:GetPropertyChangedSignal("Text"):Connect(function()
 input.press(Enum.KeyCode.T)
 input.press(Enum.KeyCode.Q)
-if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 then
-    targetlock = false
+if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 and getSignal() ~= signalv.danger then
     task.wait(10)
-    if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 then
+    if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 and getSignal() ~= signalv.danger then
         mode = false
         cs:Fire(status.slow)
     end
@@ -143,28 +164,31 @@ mode = true
 function b()
     local num = tonumber(d.Text:sub(1, -4))
     print(num)
-    if num == 0 then
+    if num == 0 or getSignal() == signalv.danger then
         cs:Fire(status.stop)
-        task.wait(15)
-        if tonumber(d.Text:sub(1, -4)) == 0 then
-            while not odm.Text:match("Loading in") and tonumber(d.Text:sub(1, -4)) == 0 do
-                cs:fire(5)
-                task.wait(3)
-                cs:fire(status.stop)
-                task.wait(6)
+        if num == 0 then
+            task.wait(15)
+            if tonumber(d.Text:sub(1, -4)) == 0 then
+                while not (odm.Text:match("Loading") or odm.Text:match("Awaiting")) and tonumber(d.Text:sub(1, -4)) == 0 do
+                    cs:fire(5)
+                    task.wait(3)
+                    cs:fire(status.stop)
+                    task.wait(6)
+                end
             end
         end
-    elseif num <= SAFESTOPDISTANCE and mode then
+    elseif (num <= SAFESTOPDISTANCE or getSignal() == signalv.caution) and mode then
         mode = false
         cs:Fire(status.slow)
-    elseif not mode and num > SAFESTOPDISTANCE then
+    elseif not mode and (num > SAFESTOPDISTANCE and (getSignal() == signalv.precaution or getSignal() == signalv.proceed)) then
         mode = true
         cs:Fire(status.full)
     end
 end
-if tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE then
+if (tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE or getSignal() == signalv.caution) then
     cs:Fire(status.slow)
 else
     cs:Fire(status.full)
 end
 c = d:GetPropertyChangedSignal("Text"):Connect(b)
+print(getSignal())
