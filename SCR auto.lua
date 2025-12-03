@@ -196,5 +196,5 @@ else
     cs:Fire(status.full)
 end
 d:GetPropertyChangedSignal("Text"):Connect(b)
-d:GetPropertyChangedSignal("Text"):Connect(b)
+signald:GetPropertyChangedSignal("Text"):Connect(b)
 print(getSignal())
