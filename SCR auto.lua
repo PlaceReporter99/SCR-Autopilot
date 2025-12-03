@@ -169,7 +169,7 @@ mode = true
 function b()
     local num = tonumber(d.Text:sub(1, -4))
     print(num)
-    if num == 0 or (getSignal() == signalv.danger and d >= getSignalDistance()) then
+    if num == 0 or (getSignal() == signalv.danger and num >= getSignalDistance()) then
         cs:Fire(status.stop)
         if num == 0 then
             task.wait(15)
