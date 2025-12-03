@@ -95,6 +95,7 @@ local odm = cluster.Activity.ActivityMessage
 local nl = drive.Summary.SummaryPage.Controls.NextLeg
 local aws = cluster.AwsIndicatorMinimal
 local signal = drive.Additional.DetailsStack.AdvanceContainer.Signal.Standard
+local signald = drive.Additional.DetailsStack.AdvanceContainer.Signal.Distance
 
 function getSignal()
     if signal.Danger.BackgroundTransparency == 0 then
@@ -115,6 +116,10 @@ function getSignal()
     end
     print("signal get unknown")
     return signalv.unknown
+end
+
+function getSignalDistance()
+    return tonumber(signald.Text:sub(1, -4))
 end
 
 local mode = nil
@@ -164,7 +169,7 @@ mode = true
 function b()
     local num = tonumber(d.Text:sub(1, -4))
     print(num)
-    if num == 0 or getSignal() == signalv.danger then
+    if num == 0 or (getSignal() == signalv.danger and d >= getSignalDistance()) then
         cs:Fire(status.stop)
         if num == 0 then
             task.wait(15)
