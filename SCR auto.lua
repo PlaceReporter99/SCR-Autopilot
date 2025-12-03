@@ -195,5 +195,6 @@ if (tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE or getSignal() == signalv.ca
 else
     cs:Fire(status.full)
 end
-c = d:GetPropertyChangedSignal("Text"):Connect(b)
+d:GetPropertyChangedSignal("Text"):Connect(b)
+d:GetPropertyChangedSignal("Text"):Connect(b)
 print(getSignal())
