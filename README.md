@@ -4,6 +4,7 @@ A working autopilot (nearly) for the game Stepford Country Railway. You will sti
 If the train undershoots the station (virtually guaranteed on a station with buffers), it will adjust very slowly until it is forward enough on the platform to open its doors. Thus, a route with no stations requiring you to get close to buffers would be ideal.
 ### Connect
 **R039**, from Benton to Leighton City, has this trait.
+
 **R004**, from St Helens Bridge to Edgemead, has this trait as well.
 ### Waterline
 **R018**, from Newry Harbour to Farleigh, has this trait.
