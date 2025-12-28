@@ -1,5 +1,7 @@
 # SCR-Autopilot
 A working autopilot (nearly) for the game Stepford Country Railway. You will still need to click "Next Leg" manually, however this can be done easily through the use of an autoclicker.
+## Download
+* Download SCR_auto.lua for the auto driving script.
 ## Reccomended Routes
 If the train undershoots the station (virtually guaranteed on a station with buffers), it will adjust very slowly until it is forward enough on the platform to open its doors. Thus, a route with no stations requiring you to get close to buffers would be ideal.
 ### Connect
