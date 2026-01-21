@@ -26,6 +26,7 @@ local SAFESTOPDISTANCE = 0.35
 
 
 
+print("AUTO DRIVE")
 local cs = Instance.new("BindableEvent")
 cs.Name = "ChangeSpeed"
 status = {
@@ -56,7 +57,6 @@ local fex = Instance.new("BindableEvent")
 fex.Name = "ExecuteFunction"
 fex.Event:Connect(function(f) f() end)
 local vim = game:GetService('VirtualInputManager')
-local vu = game:GetService('VirtualUser')
 input = {
     hold = function(key, time)
         print("Holding key", key)
@@ -153,9 +153,9 @@ end
 drive.Clock.TextLabel:GetPropertyChangedSignal("Text"):Connect(function()
 input.press(Enum.KeyCode.T)
 input.press(Enum.KeyCode.Q)
-if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 and getSignal() ~= signalv.danger then
+if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (getSignal() ~= signalv.danger or getSignalDistance() > tonumber(d.Text:sub(1, -4))) then
     task.wait(10)
-    if arm.Rotation == speed_angle(0) and tonumber(d.Text:sub(1, -4)) ~= 0 and getSignal() ~= signalv.danger then
+    if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (getSignal() ~= signalv.danger or getSignalDistance() > tonumber(d.Text:sub(1, -4))) then
         mode = false
         cs:Fire(status.slow)
     end
@@ -174,7 +174,7 @@ function b()
         if num == 0 then
             task.wait(15)
             if tonumber(d.Text:sub(1, -4)) == 0 then
-                while not (odm.Text:match("Loading") or odm.Text:match("Awaiting")) and tonumber(d.Text:sub(1, -4)) == 0 do
+                while not (odm.Text:match("ing")) and tonumber(d.Text:sub(1, -4)) == 0 do
                     cs:fire(5)
                     task.wait(3)
                     cs:fire(status.stop)
