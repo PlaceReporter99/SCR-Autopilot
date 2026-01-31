@@ -1,0 +1,35 @@
+local l = {
+  ["R001"] = {"Stepford Central"}
+  ["R002"] = {}
+  ["R003"] = {"Stepford Central"}
+  ["R004"] = {}
+  ["R005"] = {"Stepford Victoria"}
+  ["R006"] = {"Stepford Victoria"}
+  ["R007"] = {"Stepford Central"}
+  ["R008"] = {"Stepford Victoria", "Berrily"}
+  ["R009"] = {"Stepford Victoria"}
+  ["R010"] = {"Newry", "Greenslade"}
+  ["R011"] = {"Newry", "Connolly"}
+  ["R012"] = {"Connolly"}
+  ["R013"] = {"Greenslade"}
+  ["R014"] = {"Newry", "Esterfield"}
+  ["R015"] = {"Benton", "Morganstown"}
+  ["R016"] = {"Esterfield"}
+  ["R017"] = {"Newry", "Terminal 2"}
+  ["R018"] = {"Newry Harbour"}
+  ["R019"] = {"Connolly"}
+  ["R020"] = {"Stepford Central", "Whitefield"}
+  ["R021"] = {"Stepford UFC"}
+  ["R022"] = {"Beechley", "Whitefield"}
+  ["R023"] = {"Stepford Victoria", "Stepford UFC"}
+  ["R024"] = {"Stepford Central", "Llyn-by-the-Sea"}
+  ["R025"] = {"Westwyvern"}
+  ["R026"] = {"Stepford Victoria", "Llyn-by-the-Sea"}
+  ["R027"] = {"Berrily"}
+  ["R028"] = {"Stepford Victoria", "Willowfield"}
+  ["R029"] = {"Stepford Victoria", "Beechley"}
+  ["R030"] = {"Willowfield", "Berrily"}
+  ["R031"] = {"Willowfield", "Stepford UFC"}
+  ["R032"] = {"Willowfield"}
+}
+return l
