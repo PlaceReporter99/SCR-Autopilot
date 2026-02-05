@@ -1,5 +1,5 @@
 # SCR-Autopilot
-A working autopilot (nearly) for the game Stepford Country Railway. You will still need to click "Next Leg" manually, however this can be done easily through the use of an autoclicker.
+A work-in-progress autopilot for the game Stepford Country Railway. You will need to click "Next Leg" manually, however this can be done easily through the use of an autoclicker. It also does not handle buffers very well at the moment.
 ## Download
 * Download `SCR auto.lua` for the auto driving script.
 * Download `SCR guard.lua` for the auto guard script. It is recommended to do this in a private server as this does not follow all rules as stated in the operations guide.
