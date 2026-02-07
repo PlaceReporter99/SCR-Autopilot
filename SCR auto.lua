@@ -12,6 +12,8 @@ local SAFESTOPSPEED = 40
 -- The distance in miles from the station your train should reach before slowing down.
 local SAFESTOPDISTANCE = 0.35
 
+-- The distance in studs from the buffer the train should stop.
+local BUFFERSTOP = 100
 
 
 
@@ -28,6 +30,7 @@ local SAFESTOPDISTANCE = 0.35
 
 print("AUTO DRIVE")
 local cs = Instance.new("BindableEvent")
+local buf = loadstring(game:HttpGet("https://raw.githubusercontent.com/PlaceReporter99/SCR-Autopilot/refs/heads/main/const/RouteBuffers.lua"))()
 cs.Name = "ChangeSpeed"
 status = {
     ["full"] = 2,
@@ -80,12 +83,9 @@ input = {
         vim:SendKeyEvent(false, key, false, nil)
     end
 }
-function clickButton(button)
-    button.Selected = true
-    input.press(Enum.KeyCode.Return)
-end
 local drive = game.Players.LocalPlayer.PlayerGui.DriveGui
-local left = drive.Additional.DetailsStack.AdvanceContainer.Main.ScheduleDetails.Counters
+local schd = drive.Additional.DetailsStack.AdvanceContainer.Main.ScheduleDetails
+local left = schd.Counters
 local cluster = drive.Cluster
 local arm = cluster.Spedometer.TargetIndicator
 local buttons = cluster.Actions
@@ -96,6 +96,10 @@ local nl = drive.Summary.SummaryPage.Controls.NextLeg
 local aws = cluster.AwsIndicatorMinimal
 local signal = drive.Additional.DetailsStack.AdvanceContainer.Signal.Standard
 local signald = drive.Additional.DetailsStack.AdvanceContainer.Signal.Distance
+
+function getD(v)
+    return (workspace.CurrentCamera.Focus.Position - v).Magnitude
+end
 
 function getSignal()
     if signal.Danger.BackgroundTransparency == 0 then
@@ -131,7 +135,7 @@ function target(speed)
     input.stop(Enum.KeyCode.S)
     print("targeting speed", speed)
     print("rotation data this", speed_angle(speed), "that", arm.Rotation)
-    if -0.5 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 0.5 then
+    if -3.6 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 3.6 then
         -- it's fine, do nothing 
         print("speed did not change", speed)
     elseif speed_angle(speed) < arm.Rotation then
@@ -170,18 +174,18 @@ function b()
     local num = tonumber(d.Text:sub(1, -4))
     print(num)
     if num == 0 or (getSignal() == signalv.danger and num >= getSignalDistance()) then
-        cs:Fire(status.stop)
         if num == 0 then
-            task.wait(15)
-            if tonumber(d.Text:sub(1, -4)) == 0 then
-                while not (odm.Text:match("ing")) and tonumber(d.Text:sub(1, -4)) == 0 do
-                    cs:fire(5)
-                    task.wait(3)
-                    cs:fire(status.stop)
-                    task.wait(6)
+            local plat = string.gsub(schd.Platform.Text, "Platform ", "")
+            local st = schd.NextStop.Text
+            if buf[st] and buf[st][plat] then
+                while getD(buf[st][plat]) >= BUFFERSTOP do
+                    print(getD(buf[st][plat]))
+                    cs:Fire(15)
+                    task.wait(0.1)
                 end
             end
         end
+        cs:Fire(status.stop)
     elseif (num <= SAFESTOPDISTANCE or getSignal() == signalv.caution) and mode then
         mode = false
         cs:Fire(status.slow)
@@ -197,4 +201,12 @@ else
 end
 d:GetPropertyChangedSignal("Text"):Connect(b)
 signald:GetPropertyChangedSignal("Text"):Connect(b)
+function under(m, t)
+    if (string.find(m, "alongside")) and t == Enum.MessageType.MessageWarning then
+        cs:fire(5)
+        task.wait(3)
+        cs:fire(status.stop)
+    end
+end
+game.LogService.MessageOut:Connect(under)
 print(getSignal())
