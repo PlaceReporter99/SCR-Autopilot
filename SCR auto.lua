@@ -4,19 +4,19 @@
 -- You may want to change these constants depending on your train.
 
 -- The maximum speed of your train.
-local MAXSPEED = 100
+local MAXSPEED = 75
 
 -- Whether to obey the current speed limit.
 local OBEYSPEEDLIMIT = true
 
 -- The speed the train should slow down to when getting close to the station.
-local SAFESTOPSPEED = 40
+local SAFESTOPSPEED = 30
 
 -- The speed the train should move at when approaching a single yellow signal.
 local YELLOWSIGNALSPEED = 45
 
 -- The distance in miles from the station your train should reach before slowing down.
-local SAFESTOPDISTANCE = 0.35
+local SAFESTOPDISTANCE = 0.2
 
 -- The distance in studs from the buffer the train should stop.
 local BUFFERSTOP = 100
@@ -90,6 +90,7 @@ local aws = cluster.AwsIndicatorMinimal
 local signal = drive.Additional.DetailsStack.AdvanceContainer.Signal.Standard
 local signald = drive.Additional.DetailsStack.AdvanceContainer.Signal.Distance
 local speedl = game.Players.LocalPlayer.PlayerGui.DriveGui.Cluster.Stats.CurrentState.SpeedLimit.Limit
+local msg = game.Players.LocalPlayer.PlayerGui.DriveGui.Additional.DetailsStack.MessageContainer
 
 function getD(v)
     return (workspace.CurrentCamera.Focus.Position - v).Magnitude
@@ -141,7 +142,7 @@ function target(speed)
     input.stop(Enum.KeyCode.S)
     print("targeting speed", speed)
     print("rotation data this", speed_angle(speed), "that", arm.Rotation)
-    if -3.6 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 3.6 then
+    if -1.8 <= speed_angle(speed) - arm.Rotation and speed_angle(speed) - arm.Rotation <= 1.8 then
         -- it's fine, do nothing 
         print("speed did not change", speed)
     elseif speed_angle(speed) < arm.Rotation then
@@ -166,7 +167,6 @@ input.press(Enum.KeyCode.Q)
 if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (getSignal() ~= signalv.danger or getSignalDistance() > tonumber(d.Text:sub(1, -4))) then
     task.wait(10)
     if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (getSignal() ~= signalv.danger or getSignalDistance() > tonumber(d.Text:sub(1, -4))) then
-        mode = false
         cs:Fire(SAFESTOPSPEED)
     end
 end
@@ -209,12 +209,12 @@ end
 d:GetPropertyChangedSignal("Text"):Connect(b)
 signald:GetPropertyChangedSignal("Text"):Connect(b)
 speedl:GetPropertyChangedSignal("Text"):Connect(b)
-function under(m, t)
-    if (string.find(m, "alongside")) and t == Enum.MessageType.MessageWarning then
+function under(child)
+    if child.Name == "DriveMessage" and (string.match(child.TextLabel.Text, "longside") or string.match(child.TextLabel.Text, "uffer")) then
         cs:fire(5)
         task.wait(3)
         cs:fire(0)
     end
 end
-game.LogService.MessageOut:Connect(under)
+msg.ChildAdded:Connect(under)
 print(getSignal())
