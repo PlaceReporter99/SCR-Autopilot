@@ -6,8 +6,14 @@
 -- The maximum speed of your train.
 local MAXSPEED = 100
 
+-- Whether to obey the current speed limit.
+local OBEYSPEEDLIMIT = true
+
 -- The speed the train should slow down to when getting close to the station.
 local SAFESTOPSPEED = 40
+
+-- The speed the train should move at when approaching a single yellow signal.
+local YELLOWSIGNALSPEED = 45
 
 -- The distance in miles from the station your train should reach before slowing down.
 local SAFESTOPDISTANCE = 0.35
@@ -32,11 +38,6 @@ print("AUTO DRIVE")
 local cs = Instance.new("BindableEvent")
 local buf = loadstring(game:HttpGet("https://raw.githubusercontent.com/PlaceReporter99/SCR-Autopilot/refs/heads/main/const/RouteBuffers.lua"))()
 cs.Name = "ChangeSpeed"
-status = {
-    ["full"] = 2,
-    ["slow"] = 1,
-    ["stop"] = 0
-}
 signalv = {
     ["proceed"] = 0,
     ["precaution"] = 1,
@@ -45,15 +46,7 @@ signalv = {
     ["unknown"] = 4
 }
 cs.Event:Connect(function(a)
-    if a == status.full then
-        target(MAXSPEED)
-    elseif a == status.slow then
-        target(SAFESTOPSPEED)
-    elseif a == status.stop then
-        target(0)
-    else
-        target(a)
-    end
+    target(a)
 end)
 
 local fex = Instance.new("BindableEvent")
@@ -96,9 +89,18 @@ local nl = drive.Summary.SummaryPage.Controls.NextLeg
 local aws = cluster.AwsIndicatorMinimal
 local signal = drive.Additional.DetailsStack.AdvanceContainer.Signal.Standard
 local signald = drive.Additional.DetailsStack.AdvanceContainer.Signal.Distance
+local speedl = game.Players.LocalPlayer.PlayerGui.DriveGui.Cluster.Stats.CurrentState.SpeedLimit.Limit
 
 function getD(v)
     return (workspace.CurrentCamera.Focus.Position - v).Magnitude
+end
+
+function getSpeedLimit()
+    if OBEYSPEEDLIMIT then
+        return tonumber(speedl.Text)
+    else
+        return 1000
+    end
 end
 
 function getSignal()
@@ -131,6 +133,10 @@ local mode = nil
 speed_angle = function(speed) return speed*1.2 - 31 end
 
 function target(speed)
+    local tt = false
+    local stopr = cs.Event:Connect(function()
+        tt = true
+    end)
     input.stop(Enum.KeyCode.W)
     input.stop(Enum.KeyCode.S)
     print("targeting speed", speed)
@@ -141,14 +147,14 @@ function target(speed)
     elseif speed_angle(speed) < arm.Rotation then
         print("speed decrease to", speed)
         input.start(Enum.KeyCode.S)
-        while speed_angle(speed) < arm.Rotation do
+        while speed_angle(speed) < arm.Rotation or tt do
             task.wait(0.005)
         end
         input.stop(Enum.KeyCode.S)
     elseif speed_angle(speed) > arm.Rotation then
         print("speed increase to", speed)
         input.start(Enum.KeyCode.W)
-        while speed_angle(speed) > arm.Rotation do
+        while speed_angle(speed) > arm.Rotation or tt do
             task.wait(0.005)
         end
         input.stop(Enum.KeyCode.W)
@@ -161,15 +167,14 @@ if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (get
     task.wait(10)
     if arm.Rotation <= speed_angle(10) and tonumber(d.Text:sub(1, -4)) ~= 0 and (getSignal() ~= signalv.danger or getSignalDistance() > tonumber(d.Text:sub(1, -4))) then
         mode = false
-        cs:Fire(status.slow)
+        cs:Fire(SAFESTOPSPEED)
     end
 end
 --clickButton(nl)
 end)
 local c;
 print(d.Text)
-cs:Fire(status.full)
-mode = true
+cs:Fire(math.min(MAXSPEED, getSpeedLimit()))
 function b()
     local num = tonumber(d.Text:sub(1, -4))
     print(num)
@@ -185,27 +190,30 @@ function b()
                 end
             end
         end
-        cs:Fire(status.stop)
-    elseif (num <= SAFESTOPDISTANCE or getSignal() == signalv.caution) and mode then
-        mode = false
-        cs:Fire(status.slow)
-    elseif not mode and (num > SAFESTOPDISTANCE and (getSignal() == signalv.precaution or getSignal() == signalv.proceed)) then
-        mode = true
-        cs:Fire(status.full)
+        cs:Fire(0)
+    elseif num <= SAFESTOPDISTANCE then
+        cs:Fire(math.min(SAFESTOPSPEED, getSpeedLimit()))
+    elseif getSignal() == signalv.caution then
+        cs:Fire(math.min(YELLOWSIGNALSPEED, getSpeedLimit()))
+    elseif (num > SAFESTOPDISTANCE and (getSignal() == signalv.precaution or getSignal() == signalv.proceed)) then
+        cs:Fire(math.min(MAXSPEED, getSpeedLimit()))
     end
 end
-if (tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE or getSignal() == signalv.caution) then
-    cs:Fire(status.slow)
+if (tonumber(d.Text:sub(1, -4)) <= SAFESTOPDISTANCE) then
+    cs:Fire(math.min(SAFESTOPSPEED, getSpeedLimit()))
+elseif getSignal() == signalv.caution then
+    cs:Fire(math.min(YELLOWSIGNALSPEED, getSpeedLimit()))
 else
-    cs:Fire(status.full)
+    cs:Fire(math.min(MAXSPEED, getSpeedLimit()))
 end
 d:GetPropertyChangedSignal("Text"):Connect(b)
 signald:GetPropertyChangedSignal("Text"):Connect(b)
+speedl:GetPropertyChangedSignal("Text"):Connect(b)
 function under(m, t)
     if (string.find(m, "alongside")) and t == Enum.MessageType.MessageWarning then
         cs:fire(5)
         task.wait(3)
-        cs:fire(status.stop)
+        cs:fire(0)
     end
 end
 game.LogService.MessageOut:Connect(under)
