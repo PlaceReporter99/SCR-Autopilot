@@ -4,7 +4,7 @@ A work-in-progress autopilot for the game Stepford Country Railway. You will nee
 * Download `SCR auto.lua` for the auto driving script.
 * Download `SCR guard.lua` for the auto guard script. It is recommended to do this in a private server as this does not follow all rules as stated in the operations guide.
 ## Reccomended Routes
-If the train undershoots the station (virtually guaranteed on a station with buffers), it will adjust very slowly until it is forward enough on the platform to open its doors. Thus, a route with no stations requiring you to get close to buffers would be ideal.
+If the train undershoots the station (virtually guaranteed on a station with buffers), it will adjust very slowly until it is forward enough on the platform to open its doors. Thus, a route with no stations requiring you to get close to buffers would be ideal. As of an update, all the positions of the buffers have been coded in, so the overshooting is no longer the case.
 
 As of V2.3, different modes of train power have been added. This script does not support power changeovers, so you should start the required power source before running the script. You should NEVER use battery mode, and NEVER raise the pantograph for a route with an unelectrified section.
 ### Metro
